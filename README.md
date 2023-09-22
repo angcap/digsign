@@ -14,5 +14,5 @@ On linux
 or generally execute
 
 ```
-java -jar digsign-1.0.0-SNAPSHOT-jar-with-dependencies.jar <filetosign>
+java -jar digsign-1.0.0-SNAPSHOT-jar-with-dependencies.jar
 ```

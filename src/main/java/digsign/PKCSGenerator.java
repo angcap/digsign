@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -32,21 +31,24 @@ import org.bouncycastle.util.Store;
 
 public class PKCSGenerator {
 
-	private static final String CHANGEME = "changeme";
-	private static final String KEY_ALIAS = "test";
-
 	
-	public byte[] sign(byte [] data) throws IOException, OperatorCreationException, KeyStoreException, NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException, CMSException{
+	private KeyStoreManager km ;
+	
+	public PKCSGenerator() throws Exception {
+		this.km = new KeyStoreManager();
 		Security.addProvider(new BouncyCastleProvider());
-        KeyStore keystore = KeyStore.getInstance("PKCS12");
-        try (var keystoreContents = this.getClass().getClassLoader().getResourceAsStream("test.keystore")) {
-            keystore.load(keystoreContents, CHANGEME.toCharArray());
-        }
+	}
+	
+	public PKCSGenerator(KeyStoreManager km ) throws Exception {
+		this.km = km;
+		Security.addProvider(new BouncyCastleProvider());
+	}
+	
+	public byte[] sign(byte [] data) throws Exception{
+		
         Provider provider = Security.getProvider("BC");
-        PrivateKey key = (PrivateKey) keystore.getKey(KEY_ALIAS,
-        		CHANGEME.toCharArray());
-        X509Certificate cert = (X509Certificate) keystore
-                .getCertificate(KEY_ALIAS);
+        PrivateKey key = km.getPrivateKey();
+        X509Certificate cert = km.getCertificate();
 
         // Create the signature
         CMSTypedData msg = new CMSProcessableByteArray(data);
@@ -81,7 +83,7 @@ public class PKCSGenerator {
 	 * @throws IOException
 	 * @throws CMSException
 	 */
-	public String sign(String file) throws UnrecoverableKeyException, OperatorCreationException, KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, CMSException {
+	public String sign(String file) throws Exception {
 		return Files.write(Paths.get(file+".p7m"), this.sign(Files.readAllBytes(Paths.get(file))), StandardOpenOption.CREATE).toAbsolutePath().toUri().toString();
 	}
 }
